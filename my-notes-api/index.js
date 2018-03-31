@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 // MongoDB client
 const mongodb = require('mongodb');
 
+const mongoose = require('mongoose');
+
 var ObjectID = mongodb.ObjectID;
 const dbClient = mongodb.MongoClient;
 
@@ -17,6 +19,16 @@ app.use(bodyParser.urlencoded({extended: true}));
  * Prepare la connexion à la BD
  */
 function prepareDatabase(callback) {
+    mongoose.connect('mongodb://localhost:27017/myNotes');
+    mongoose.connection.on('error', err => {
+        console.log('erreur de connexion', err);
+        process.exit(-1);
+    });
+
+    mongoose.connection.on('open', () => {
+        console.log('Connexion mongoose reussie');
+    });
+
     dbClient.connect('mongodb://localhost:27017/myNotes', function(err, database) {
         if(err) console.error('erreur de connexion à Mongo', err);
         else callback(database.db('myNotes'));
