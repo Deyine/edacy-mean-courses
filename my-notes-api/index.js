@@ -16,6 +16,7 @@ const app = express();
 
 
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
 
 /**
  * Prepare la connexion à la BD
@@ -32,7 +33,6 @@ function prepareDatabase(callback) {
         callback();
     });
 }
-
 
 /**
  * Démarre l'API
@@ -54,7 +54,7 @@ function startApplication() {
 
     // Get all notes
     app.get('/api/notes', function(request, response) {
-        Note.find({title: "Mon nouvel objet"}, '-title', (err, results) => {
+        Note.find({}, '', (err, results) => {
             if(err) {
                 console.log('Problème d listing', err);
                 response.status(500).send({'message': 'Problème d liste'});
@@ -74,6 +74,31 @@ function startApplication() {
                 if (err){
                     console.log('Probleme de mise à jour',err);
                     res.status(500).send({'message': 'Problème lors de la modification'});
+                } else{
+                    res.status(200).send(result);
+                }
+        });
+    });
+
+    app.get('/api/notes/:id', function(req, res) {
+        console.log('Tu tentes de recupérer la note ' + req.params.id, req.body);
+        
+        Note.findById(
+            {_id: new ObjectID(req.params.id)},
+            function(err,result){
+                
+                console.log(result);
+
+                console.log(result.title);
+
+                var onlyPolitique = result.themes
+                        .filter(elt =>  elt.name == 'Politique');
+
+
+                console.log('OnlyP', onlyPolitique);
+
+                if (err){
+                    res.status(500).send({'message': 'Introuvable'});
                 } else{
                     res.status(200).send(result);
                 }
